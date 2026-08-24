@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "",
+    "build": "",
+    "start": ""
   },
   "keywords": [],
   "author": "",
@@ -17,5 +19,13 @@
     }
   },
   "packageManager": "pnpm@11.23.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "26.2.0",
+    "typescript": "7.0.2"
+  }
 }
