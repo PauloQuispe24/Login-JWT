@@ -1,8 +1,9 @@
 import express from "express";
 import { connectDB } from "./config/db.js";
-import { validateRegister } from "./validators/auth.js";
+import { validateRegister, validateLogin } from "./validators/auth.js";
 import { User } from "./models/User.js";
-import { hashPassword } from "./utils/password.js";
+import { hashPassword, comparePassword } from "./utils/password.js";
+import jwt from "jsonwebtoken";
 
 const app = express();
 app.use(express.json());
@@ -41,6 +42,56 @@ app.post("/auth/register", async (req, res) => {
         email: newUser.email,
         role: newUser.role,
       },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error interno del servidor.",
+    });
+  }
+});
+
+app.post("/auth/login", async (req, res) => {
+  const validation = validateLogin(req.body);
+  if (!validation.valid) {
+    return res.status(400).json({
+      message: validation.message,
+    });
+  }
+  const { email, password } = validation.data;
+  try {
+    const userExist = await User.findOne({ email });
+    if (!userExist) {
+      return res.status(401).json({
+        message: "Email o contraseña son incorrectos.",
+      });
+    }
+    const passwordsCompare = await comparePassword(
+      password,
+      userExist.passwordHash,
+    );
+    if (!passwordsCompare) {
+      return res.status(401).json({
+        message: "Email o contraseña son incorrectos.",
+      });
+    }
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error("JWT_SECRET no está definido.");
+    }
+    const newToken = jwt.sign(
+      {
+        sub: userExist._id.toString(),
+        role: userExist.role,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
+    return res.status(200).json({
+      message: "Login realizado de forma exitosa.",
+      token: newToken,
     });
   } catch (error) {
     console.error(error);

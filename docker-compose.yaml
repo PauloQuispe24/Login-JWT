@@ -7,6 +7,8 @@ services:
     volumes:
       - "./backend:/app"
     command: "pnpm dev"
+    environment: 
+      JWT_SECRET: ${JWT_SECRET}
 
   mongodb:
     image: "mongo:8"
