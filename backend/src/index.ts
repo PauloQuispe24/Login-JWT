@@ -4,6 +4,8 @@ import { validateRegister, validateLogin } from "./validators/auth.js";
 import { User } from "./models/User.js";
 import { hashPassword, comparePassword } from "./utils/password.js";
 import jwt from "jsonwebtoken";
+import { authenticateToken } from "./middleware/auth.js";
+import { env } from "./config/env.js";
 
 const app = express();
 app.use(express.json());
@@ -75,16 +77,12 @@ app.post("/auth/login", async (req, res) => {
         message: "Email o contraseña son incorrectos.",
       });
     }
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
-      throw new Error("JWT_SECRET no está definido.");
-    }
     const newToken = jwt.sign(
       {
         sub: userExist._id.toString(),
         role: userExist.role,
       },
-      JWT_SECRET,
+      env.JWT_SECRET,
       {
         expiresIn: "1h",
       },
@@ -99,6 +97,13 @@ app.post("/auth/login", async (req, res) => {
       message: "Error interno del servidor.",
     });
   }
+});
+
+app.get("/auth/me", authenticateToken, (req, res) => {
+  return res.status(200).json({
+    message: "Tienes acceso a una ruta protegida.",
+    user: req.user,
+  });
 });
 
 async function startServer() {
