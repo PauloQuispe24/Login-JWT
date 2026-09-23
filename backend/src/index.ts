@@ -40,7 +40,7 @@ app.post("/auth/register", async (req, res) => {
     return res.status(201).json({
       message: "El usuario ha sido registrado de forma exitosa.",
       user: {
-        id: newUser._id,
+        id: newUser._id.toString(),
         email: newUser.email,
         role: newUser.role,
       },
@@ -99,11 +99,33 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
-app.get("/auth/me", authenticateToken, (req, res) => {
-  return res.status(200).json({
-    message: "Tienes acceso a una ruta protegida.",
-    user: req.user,
-  });
+app.get("/auth/me", authenticateToken, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Usuario no autenticado.",
+    });
+  }
+  try {
+    const userFound = await User.findById(req.user.id);
+    if (!userFound) {
+      return res.status(401).json({
+        message: "Usuario no encontrado.",
+      });
+    }
+    return res.status(200).json({
+      message: "Tienes acceso a una ruta protegida.",
+      user: {
+        id: userFound._id.toString(),
+        email: userFound.email,
+        role: userFound.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error interno del servidor.",
+    });
+  }
 });
 
 async function startServer() {
