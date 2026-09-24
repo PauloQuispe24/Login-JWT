@@ -4,7 +4,7 @@ import { validateRegister, validateLogin } from "./validators/auth.js";
 import { User } from "./models/User.js";
 import { hashPassword, comparePassword } from "./utils/password.js";
 import jwt from "jsonwebtoken";
-import { authenticateToken } from "./middleware/auth.js";
+import { authenticateToken, authorizeAdmin } from "./middleware/auth.js";
 import { env } from "./config/env.js";
 
 const app = express();
@@ -80,7 +80,6 @@ app.post("/auth/login", async (req, res) => {
     const newToken = jwt.sign(
       {
         sub: userExist._id.toString(),
-        role: userExist.role,
       },
       env.JWT_SECRET,
       {
@@ -126,6 +125,12 @@ app.get("/auth/me", authenticateToken, async (req, res) => {
       message: "Error interno del servidor.",
     });
   }
+});
+
+app.get("/admin", authenticateToken, authorizeAdmin, (req, res) => {
+  return res.status(200).json({
+    message: "Tienes acceso a la ruta restringida.",
+  });
 });
 
 async function startServer() {
