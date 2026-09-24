@@ -3,12 +3,14 @@ services:
   backend:
     build: "./backend"
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
     volumes:
       - "./backend:/app"
     command: "pnpm dev"
     environment: 
       JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: ${MONGO_URI}
+      PORT: ${PORT:-3000}
 
   mongodb:
     image: "mongo:8"

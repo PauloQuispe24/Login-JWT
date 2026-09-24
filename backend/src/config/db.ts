@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import { env } from "./env.js";
 
 export async function connectDB() {
   try {
-    await mongoose.connect("mongodb://mongodb:27017/login_jwt");
+    await mongoose.connect(env.MONGO_URI);
     console.log("MongoDB conectado");
   } catch (error) {
     console.error("MongoDB falló");
